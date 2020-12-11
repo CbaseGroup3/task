@@ -23,12 +23,12 @@
 - [x] python实现冒泡排序算法  
 - [x] python实现选择排序算法  
 - [ ] python实现插入排序算法  
-- [ ] python实现快速排序  
+- [x] python实现快速排序  
 - [ ] python实现希尔排序算法  
 - [x] python实现归并算法  
 - [x] python实现二分查找算法  
 - [x] python实现顺序查找和哈希查找算法  
-- [ ] python中的哈希表数据结构  
+- [x] python中的哈希表数据结构  
 - [x] cupy功能探索(https://docs.cupy.dev/en/stable/)  
 - [ ] Python数据挖掘方法案例(基于TPCH数据)  
 - [x] Python数据可视化探索(动态交互，类比Tableau,PowerBI功能，如Plotly等)  
