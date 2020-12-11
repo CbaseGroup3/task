@@ -22,7 +22,7 @@
 - [ ] 平衡二叉树简介  
 - [x] python实现冒泡排序算法  
 - [x] python实现选择排序算法  
-- [ ] python实现插入排序算法  
+- [x] python实现插入排序算法  
 - [x] python实现快速排序  
 - [ ] python实现希尔排序算法  
 - [x] python实现归并算法  
