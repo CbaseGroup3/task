@@ -24,7 +24,7 @@
 - [x] python实现选择排序算法  
 - [x] python实现插入排序算法  
 - [x] python实现快速排序  
-- [ ] python实现希尔排序算法  
+- [x] python实现希尔排序算法  
 - [x] python实现归并算法  
 - [x] python实现二分查找算法  
 - [x] python实现顺序查找和哈希查找算法  
