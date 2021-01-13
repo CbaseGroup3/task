@@ -1,0 +1,304 @@
+  线程是操作系统能够进行运算调度的最小单位，它被包涵在进程之中，是进程中的实际运作单位。进程之间不能共享内存，但线程之间共享内存非常容易。操作系统在创建进程时，需要为该进程重新分配系统资源，但创建线程的代价则小得多。因此使用多线程来实现多任务并发执行比使用多进程的效率高。python语言内置了多线程功能支持，而不是单纯地作为底层操作系统的调度方式，从而简化了python的多线程编程。  
+
+下面对多线程代码实现进行简要介绍。
+
+
+```python
+#导入必要的包
+import threading
+from threading import Lock,Thread
+import time,os
+```
+
+## 1. 调用threading.Thread创建线程
+
+
+```python
+#定义run函数用于线程测试
+def run(n):
+     print('task',n) #当前在执行的线程标识
+     time.sleep(1) #挂起进程,参数表示挂起的时间
+     print('2s')
+     time.sleep(1)
+     print('1s')
+     time.sleep(1)
+     print('0s')
+     time.sleep(1)
+```
+
+
+```python
+#定义两个线程
+t1 = threading.Thread(target=run,args=('t1',)) #target即为要执行的函数名,args为函数参数
+t2 = threading.Thread(target=run,args=('t2',))
+#两线程同时运行
+t1.start()
+t2.start()
+```
+
+    task t1
+    task t2
+    2s2s
+    
+    1s1s
+    
+    0s0s
+    
+    
+
+## 2. 继承threading.Thread自定义线程
+
+
+```python
+#定义Thread类的子类
+class MyThread(threading.Thread):
+    def __init__(self,n):
+         super(MyThread,self).__init__() #继承类的构造方法
+         self.n = n
+     #重写run函数   
+    def run(self):
+         print('task',self.n) #当前在执行的线程标识
+         time.sleep(1) #挂起进程,参数表示挂起的时间
+         print('2s')
+         time.sleep(1)
+         print('1s')
+         time.sleep(1)
+         print('0s')
+         time.sleep(1)
+```
+
+
+```python
+#定义两个MyThread类线程
+t1 = MyThread('t1')
+t2 = MyThread('t2')
+#两线程同时运行
+t1.start()
+t2.start()
+```
+
+    task t1
+    task t2
+    2s2s
+    
+    1s1s
+    
+    0s0s
+    
+    
+
+## 3. 守护线程的实现
+
+对于多线程而言,可以通过设置主线程和子线程之间的关系调整运行方式.若将子线程设置为守护线程,则主线程运行结束后,子线程不论运行情况如何都会终止.设置守护进程可以通过函数setDaemons实现
+
+通过设置setDaemon为True,可以将子进程设置为守护进程,主进程运行结束后便随之结束.
+
+
+```python
+t = threading.Thread(target=run,args=('t',)) #target即为要执行的函数名,args为函数参数
+t.setDaemon(True)
+t.start()
+print('end')
+```
+
+    task t
+    end
+    2s
+    1s
+    0s
+    
+
+若需守护进程运行结束后主进程再结束,则通过join函数实现,注意添加在start之后的位置:
+
+
+```python
+t = threading.Thread(target=run,args=('t',)) 
+t.setDaemon(True)
+t.start()
+t.join() #设置主线程等待子线程结束
+print('end')
+```
+
+    task t
+    2s
+    1s
+    0s
+    end
+    
+
+## 4. 多线程之间的全局变量共享
+
+由于进程是系统分配资源的最小执行单位,因此同一个进程中的多线程可以实现资源共享. 即不同进程可以调用同一全局变量,指向同一地址.
+
+
+```python
+g_num = 100
+def work1():
+    global  g_num
+    for i in range(3):
+        g_num+=1
+        print('in work1 g_num is : %d' % g_num)
+
+def work2():
+    global g_num
+    print('in work2 g_num is : %d' % g_num)
+
+t1 = threading.Thread(target=work1)
+t1.start()
+time.sleep(1)
+t2=threading.Thread(target=work2)
+t2.start()
+```
+
+    in work1 g_num is : 101
+    in work1 g_num is : 102
+    in work1 g_num is : 103
+    in work2 g_num is : 103
+    
+
+## 5. 线程锁
+
+由于全局变量的共享,可能会出现多个线程同时修改某一变量的冲突,设置线程锁即可解决这一问题.线程锁在同一时刻仅仅允许一个或几个线程执行操作.但不同的线程可以对同一资源自行定义锁.
+
+#### (1) 互斥锁
+
+互斥锁同一时刻仅允许一个线程进行操作,是最基本的线程锁形式.
+
+
+```python
+def work():
+    global n
+    lock.acquire() #添加线程锁
+    temp = n
+    time.sleep(0.1)
+    n = temp-1
+    print(n)
+    lock.release() #线程锁释放
+
+lock = Lock()
+n = 10
+l = []
+#主线程中通过循环生成多个子进程
+for i in range(10):
+     p = Thread(target=work)
+     l.append(p)
+     p.start()
+for i in l:
+     i.join() #设置主线程等待子线程结束,否则来不及打印结果 
+```
+
+    9
+    8
+    7
+    6
+    5
+    4
+    3
+    2
+    1
+    0
+    
+
+#### (2) 递归锁
+
+当需要对同一线程定义多个锁时,由于其中的联结关系可能会出现死锁.为避免这一情况,递归锁允许被同一进程多次嵌套调用.下面以A B两人过独木桥的问题进行解释.
+
+
+```python
+"""
+A只能看得到北边桥上有没有人，看不到南边桥有没有人，
+当他看到北边桥没人就会过桥，等到他到桥中间才能看到南边桥有没有人
+"""
+def A():
+  lock.acquire()#拿到北边桥的锁
+  print("A过桥北")
+  time.sleep(3)#过桥中
+  lock.acquire()#企图过到南边桥，
+  print("A过桥南")
+  time.sleep(3) # 过桥中
+  lock.release()
+  lock.release()
+  print("A过桥成功")
+ 
+"""
+B只能看得到南边桥上有没有人，看不到北边桥有没有人，
+当他看到南边桥没人就会过桥，等到他到桥中间才能看到北边桥有没有人
+"""
+def B():
+  lock.acquire() # 拿南桥锁，
+  print("\n"," B过桥南")
+  time.sleep(3) # 过桥中
+  lock.acquire() # 企图拿北桥的锁
+  print("B过桥北")
+  time.sleep(3) # 过桥中
+  lock.release()
+  lock.release()
+  print("B过桥成功")
+ 
+lock=threading.RLock()
+ 
+tA=threading.Thread(target=A)
+tB=threading.Thread(target=B)
+tA.start()
+tB.start()
+ 
+tA.join()
+tB.join()
+```
+
+    A过桥北
+    A过桥南
+    A过桥成功
+      B过桥南
+    
+    B过桥北
+    B过桥成功
+    
+
+#### (3)信号量
+
+ 信号量可以限制进入的线程的数量。互斥锁同时只允许一个线程更改数据，而Semaphore是同时允许一定数量的线程更改数据,类似于包含多个车位的停车场.
+
+
+```python
+def run():
+  s.acquire() #加锁
+  print("hello")
+  time.sleep(1.5)
+  s.release() #释放
+ 
+s=threading.BoundedSemaphore(3)#限制3个
+ 
+threading_list=[]
+for i in range(12):#创建12个线程
+  obj=threading.Thread(target=run)
+  obj.setDaemon(True) # 设置守护线程，避免干扰主线程运行，并行等待
+  obj.start()
+ 
+for i in range(4):
+  print("")#为了把结果分割，可以清楚看出分组
+  time.sleep(1.5)
+```
+
+    hello
+    hello
+    hello
+    
+    hello
+    
+    hello
+    hello
+    
+    hello
+    hello
+    hello
+    
+    hello
+    hello
+    hello
+    
+
+
+```python
+
+```
