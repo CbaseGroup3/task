@@ -32,6 +32,6 @@
 - [x] cupy功能探索(https://docs.cupy.dev/en/stable/)  
 - [ ] 基于SQL内置Python的parquet文件读写功能探索
 - [x] Python数据可视化探索(动态交互，类比Tableau,PowerBI功能，如Plotly等)  
-- [ ] Python多线程(https://blog.csdn.net/weixin_40481076/article/details/101594705)  
+- [x] Python多线程(https://blog.csdn.net/weixin_40481076/article/details/101594705)  
 
 **命名格式**：学号-对应任务名称-姓名
